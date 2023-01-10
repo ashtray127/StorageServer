@@ -1,0 +1,33 @@
+<style>
+    a {
+        text-decoration: none;
+    }
+    a:hover {
+        color: red;
+    }
+</style>
+<ul style="vertical-align:center; list-style-position: inside; max-width: 80%; text-align: left;">
+    {% for folder in files %}
+    <li>
+        <a href="{{ (request.path + '/' if request.path != '/' else '') + folder }}">
+           <img src=" /icons/folder.png" style="max-width:25; height: auto; vertical-align:middle;">
+           <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ folder }}</p>
+        </a>
+    </li>
+    {% endfor %}
+    {% for file in folders %}
+    <li>
+        <a href="{{ (request.path + '/' if request.path != '/' else '') + file }}"> 
+           <img src="/icons/{{file.split('.')[1]}}.png" style="max-width:25; height: auto; vertical-align:middle;" onerror="if (this.src != '/icons/file.png') this.src = '/icons/file.png';">
+           <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ file }}</p>
+        </a>
+    </li>
+    {% endfor %}
+    {% if back == True %}
+        <li>
+            <a href="{{ request.path.split('/')[:-1] | join('/') }}">
+                <img src="/icons/back.png" style="max-width:25; height: auto; vertical-align:middle;">
+                <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">Back</p>
+        </li>
+    {% endif %}
+</ul>
