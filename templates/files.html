@@ -34,15 +34,26 @@
         background: darkgray;
     }
 </style>
-{% set id = 0 %}
 <script type="text/javascript" 
 src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">  
-</script> 
+</script>
+<script>
+    function deleteFile(path, name) {
+        console.log("Getting here")
+        const Http = new XMLHttpRequest();
+        const url=`/api/delete/${path}/${name}`;
+        Http.open("GET", url);
+        Http.send();
 
+        Http.onreadystatechange = (e) => {
+        console.log(Http.responseText)
+}
+    }
+</script>
 <div id="contextMenu" class="context-menu" 
-style="display:none">
+style="display:none"> <!-- Remake it so that it redirects to /api/delete/path/name -->
 <ul>
-    <li><a href="#">Delete Item</a></li>
+    <li><a onclick="deleteFile('/test/', 'test.txt'); console.log('no')">Delete Item</a></li>
     <li><a href="#">Download Item</a></li>
 
 </ul>
@@ -65,7 +76,6 @@ style="display:none">
            <img src="/icons/{{file.split('.')[1]}}.png" style="max-width:25; height: auto; vertical-align:middle;" onerror="if (this.src != '/icons/file.png') this.src = '/icons/file.png';">
            <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ file }}</p>
         </a>
-        {% set id = id + 1%}
     </li>
     {% endfor %}
     {% if back == True %}
@@ -75,7 +85,7 @@ style="display:none">
             {% else %}
                 {% set path = request.path.split('/')[-2] %}
             {% endif %}
-            <a href="{{ path }}">
+            <a href="{{ path[5:] if path[5:] != '' else '/' }}">
                 <img src="/icons/back.png" style="max-width:25; height: auto; vertical-align:middle;">
                 <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">Back</p>
         </li>

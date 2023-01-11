@@ -1,11 +1,14 @@
 import os
-from flask import Flask, render_template, request, abort, send_file
+from flask import Flask, render_template, request, abort, send_file, redirect
 from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 
 app = Flask(__name__)
 app.config['UPLOAD_PATH'] = 'storage'
 
+
+def deleteFile(name, path):
+    print(os.path.join('./storage/' + path +'/'+ name))
 def unzipFolder(name):
     with ZipFile(name, 'r') as zipObj:
         zipObj.extractall('storage/' + name[:-4] + '/')
@@ -15,12 +18,21 @@ def index():
     with open('./index.html', 'r', encoding='utf-8') as f:
         return f.read()
 
+@app.route('/api/delete/<path>/<name>', methods=['POST'])
+def delete(path, name):
+    print("Getting to here")
+    print(deleteFile(name, path))
+
+@app.route('/')
+def home():
+    return redirect('/view')
+
 @app.route('/icons/<filename>')
 def icons(filename):
     return send_file(os.path.abspath('./templates/icons/' + filename))
 
-@app.route('/', defaults={'req_path': ''})
-@app.route('/<path:req_path>')
+@app.route('/view', defaults={'req_path': ''})
+@app.route('/view/<path:req_path>')
 def dir_listing(req_path):
     BASE_DIR = './storage'
 
@@ -42,7 +54,7 @@ def dir_listing(req_path):
         back = False 
     else:
         back = True
-    return render_template('files.html', files=files, folders=folders, back=back)
+    return render_template('files.html', files=files, folders=folders, back=back, deletefile=deleteFile)
 
 @app.route('/', methods=['POST'])
 def upload_files():
@@ -50,8 +62,6 @@ def upload_files():
     for item in uploaded_file:
         filename = secure_filename(item.filename)
         if filename.endswith('.zip'):
-            if filename == "upload.zip":
-                filename = "upload1.zip"
             item.save(filename)
             unzipFolder(filename)
         elif filename != '':
