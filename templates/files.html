@@ -5,11 +5,55 @@
     a:hover {
         color: red;
     }
+    .context-menu {
+        position: absolute;
+        text-align: center;
+        background: lightgray;
+        border: 1px solid black;
+    }
+
+    .context-menu ul {
+        padding: 0px;
+        margin: 0px;
+        min-width: 150px;
+        list-style: none;
+    }
+
+    .context-menu ul li {
+        padding-bottom: 7px;
+        padding-top: 7px;
+        border: 1px solid black;
+    }
+
+    .context-menu ul li a {
+        text-decoration: none;
+        color: black;
+    }
+
+    .context-menu ul li:hover {
+        background: darkgray;
+    }
 </style>
+{% set id = 0 %}
+<script type="text/javascript" 
+src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">  
+</script> 
+
+<div id="contextMenu" class="context-menu" 
+style="display:none">
+<ul>
+    <li><a href="#">Delete Item</a></li>
+    <li><a href="#">Download Item</a></li>
+
+</ul>
+</div>
+<br>
+<button onclick="window.location.href='/upload'">Upload Files</button>
+<br>
 <ul style="vertical-align:center; list-style-position: inside; max-width: 80%; text-align: left;">
     {% for folder in files %}
     <li>
-        <a href="{{ (request.path + '/' if request.path != '/' else '') + folder }}">
+        <a id="{{loop.index}}" href="{{ (request.path + '/' if request.path != '/' else '') + folder }}">
            <img src=" /icons/folder.png" style="max-width:25; height: auto; vertical-align:middle;">
            <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ folder }}</p>
         </a>
@@ -17,17 +61,50 @@
     {% endfor %}
     {% for file in folders %}
     <li>
-        <a href="{{ (request.path + '/' if request.path != '/' else '') + file }}"> 
+        <a id="{{loop.index + files|length}}" href="{{ (request.path + '/' if request.path != '/' else '') + file }}"> 
            <img src="/icons/{{file.split('.')[1]}}.png" style="max-width:25; height: auto; vertical-align:middle;" onerror="if (this.src != '/icons/file.png') this.src = '/icons/file.png';">
            <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ file }}</p>
         </a>
+        {% set id = id + 1%}
     </li>
     {% endfor %}
     {% if back == True %}
         <li>
-            <a href="{{ request.path.split('/')[:-1] | join('/') }}">
+            {% if request.path.split('/')[-2] == '' %}
+                {% set path = '/' %}
+            {% else %}
+                {% set path = request.path.split('/')[-2] %}
+            {% endif %}
+            <a href="{{ path }}">
                 <img src="/icons/back.png" style="max-width:25; height: auto; vertical-align:middle;">
                 <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">Back</p>
         </li>
     {% endif %}
 </ul>
+
+<script>
+
+    $('a').contextmenu( function(e){
+        e.preventDefault()
+
+        if (document.getElementById(
+                "contextMenu").style.display == "block")
+                hideMenu();
+            else {
+                var menu = document
+                    .getElementById("contextMenu")
+                      
+                menu.style.display = 'block';
+                menu.style.left = e.pageX + "px";
+                menu.style.top = e.pageY + "px";
+            }
+    })
+
+    function hideMenu() {
+        document.getElementById("contextMenu")
+            .style.display = 'none';
+    }
+
+    document.onclick = hideMenu;
+
+</script>

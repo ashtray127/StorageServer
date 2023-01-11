@@ -10,7 +10,7 @@ def unzipFolder(name):
     with ZipFile(name, 'r') as zipObj:
         zipObj.extractall('storage/' + name[:-4] + '/')
     os.remove(name)
-@app.route('/')
+@app.route('/upload')
 def index():
     with open('./index.html', 'r', encoding='utf-8') as f:
         return f.read()
@@ -19,8 +19,8 @@ def index():
 def icons(filename):
     return send_file(os.path.abspath('./templates/icons/' + filename))
 
-@app.route('/view', defaults={'req_path': ''})
-@app.route('/view/<path:req_path>')
+@app.route('/', defaults={'req_path': ''})
+@app.route('/<path:req_path>')
 def dir_listing(req_path):
     BASE_DIR = './storage'
 
@@ -50,6 +50,8 @@ def upload_files():
     for item in uploaded_file:
         filename = secure_filename(item.filename)
         if filename.endswith('.zip'):
+            if filename == "upload.zip":
+                filename = "upload1.zip"
             item.save(filename)
             unzipFolder(filename)
         elif filename != '':
