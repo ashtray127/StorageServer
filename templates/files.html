@@ -38,23 +38,46 @@
 src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">  
 </script>
 <script>
-    function deleteFile(path, name) {
-        console.log("Getting here")
-        const Http = new XMLHttpRequest();
-        const url=`/api/delete/${path}/${name}`;
-        Http.open("GET", url);
-        Http.send();
+function deleteFile(path, name) {
+    const Http = new XMLHttpRequest();
+    const url=`/api/delete${path}/${name}`.replace('view/', '');
+    Http.open("GET", url);
+    Http.send();
 
-        Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-}
+    Http.onreadystatechange = (e) => {
+        if (Http.status == 200) {
+            Http.abort()
+            window.location.reload();
+        }
     }
+}
+function downloadFile(path, name) { 
+    const Http = new XMLHttpRequest();
+    const url=`/api/download${path}/${name}`.replace('view/', '');
+    Http.open("GET", url);
+    Http.send();
+
+    Http.onreadystatechange = (e) => {
+        if (Http.status == 200) {
+            console.log(Http)
+            var a = document.createElement('a');
+            a.href = Http.responseText;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            Http.abort()
+
+        }
+    }
+}
+
 </script>
 <div id="contextMenu" class="context-menu" 
-style="display:none"> <!-- Remake it so that it redirects to /api/delete/path/name -->
+style="display:none">
 <ul>
-    <li><a onclick="deleteFile('/test/', 'test.txt'); console.log('no')">Delete Item</a></li>
-    <li><a href="#">Download Item</a></li>
+    <li><a id="contextMenuDelete" onclick="console.log('I love placeholders')">Delete Item</a></li>
+    <li><a id="contextMenuDownload" onclick="console.log('I love placeholders')">Download Item</a></li>
 
 </ul>
 </div>
@@ -103,7 +126,15 @@ style="display:none"> <!-- Remake it so that it redirects to /api/delete/path/na
             else {
                 var menu = document
                     .getElementById("contextMenu")
-                      
+                
+                document.getElementById("contextMenuDelete").onclick = function() {
+                    deleteFile('{{request.path}}', e.target.innerText)
+                }
+
+                document.getElementById("contextMenuDownload").onclick = function() {
+                    downloadFile('{{request.path}}', e.target.innerText)
+                }
+
                 menu.style.display = 'block';
                 menu.style.left = e.pageX + "px";
                 menu.style.top = e.pageY + "px";

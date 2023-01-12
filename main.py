@@ -1,27 +1,42 @@
 import os
-from flask import Flask, render_template, request, abort, send_file, redirect
+from flask import Flask, render_template, request, abort, send_file, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 from zipfile import ZipFile
+import pathlib
+import io
+#TODO: Remember to check if you can upload files with spaces in it
+
 
 app = Flask(__name__)
 app.config['UPLOAD_PATH'] = 'storage'
 
-
-def deleteFile(name, path):
-    print(os.path.join('./storage/' + path +'/'+ name))
 def unzipFolder(name):
     with ZipFile(name, 'r') as zipObj:
         zipObj.extractall('storage/' + name[:-4] + '/')
     os.remove(name)
+
 @app.route('/upload')
 def index():
     with open('./index.html', 'r', encoding='utf-8') as f:
         return f.read()
 
-@app.route('/api/delete/<path>/<name>', methods=['POST'])
-def delete(path, name):
-    print("Getting to here")
-    print(deleteFile(name, path))
+@app.route('/api/delete/<path:pathToFile>', methods=['GET'])
+def delete(pathToFile):
+    os.remove(os.path.join('./storage/' + pathToFile))
+    return 'Success', 200
+
+@app.route('/api/download/<path:pathToFile>', methods=['GET'])
+def download(pathToFile):
+    if os.path.isdir(os.path.join('./storage/' + pathToFile)):
+        base_path = pathlib.Path('./storage/' + pathToFile)
+        data = io.BytesIO()
+        with ZipFile(data, mode='w') as z:
+            for f in base_path.iterdir():
+                z.write(f)
+        data.seek(0)
+        return send_file(data, download_name='download.zip', as_attachment=True, mimetype='application/zip')
+    return send_file(os.path.join('./storage/' + pathToFile), as_attachment=True)
+
 
 @app.route('/')
 def home():
@@ -54,9 +69,9 @@ def dir_listing(req_path):
         back = False 
     else:
         back = True
-    return render_template('files.html', files=files, folders=folders, back=back, deletefile=deleteFile)
+    return render_template('files.html', files=files, folders=folders, back=back)
 
-@app.route('/', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 def upload_files():
     uploaded_file = request.files.getlist("file")
     for item in uploaded_file:
