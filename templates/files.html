@@ -72,6 +72,27 @@ function downloadFile(path, name) {
     }
 }
 
+function downloadFolder(path, name) {
+    const Http = new XMLHttpRequest();
+    const url=`/api/download${path}/${name}`.replace('view/', '');
+    Http.open("GET", url);
+    Http.send();
+
+    Http.onreadystatechange = (e) => {
+        if (Http.status == 200) {
+            console.log(Http)
+            var a = document.createElement('a');
+            a.href = Http.responseText;
+            a.download = name + '.zip';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            Http.abort()
+
+        }
+    }
+}
+
 </script>
 <div id="contextMenu" class="context-menu" 
 style="display:none">
@@ -87,7 +108,7 @@ style="display:none">
 <ul style="vertical-align:center; list-style-position: inside; max-width: 80%; text-align: left;">
     {% for folder in files %}
     <li>
-        <a id="{{loop.index}}" href="{{ (request.path + '/' if request.path != '/' else '') + folder }}">
+        <a id="{{loop.index}}" href="{{ (request.path + '/' if request.path != '/' else '') + folder }}" class="folder">
            <img src=" /icons/folder.png" style="max-width:25; height: auto; vertical-align:middle;">
            <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">{{ folder }}</p>
         </a>
@@ -109,7 +130,7 @@ style="display:none">
                 {% set path = request.path.split('/')[-2] %}
             {% endif %}
             <a href="{{ path[5:] if path[5:] != '' else '/' }}">
-                <img src="/icons/back.png" style="max-width:25; height: auto; vertical-align:middle;">
+                <img src="/icons/back.png" style="max-width:25; height: auto; vertical-align:middle;" class="file">
                 <p style=" display:inline-block;margin-bottom: 10px;padding-left: 5px;">Back</p>
         </li>
     {% endif %}
@@ -132,7 +153,12 @@ style="display:none">
                 }
 
                 document.getElementById("contextMenuDownload").onclick = function() {
-                    downloadFile('{{request.path}}', e.target.innerText)
+                    if (e.target.src.includes('folder')){
+                        downloadFolder('{{request.path}}', e.target.innerText)
+                    }
+                    else{
+                        downloadFile('{{request.path}}', e.target.innerText)
+                    }
                 }
 
                 menu.style.display = 'block';

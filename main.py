@@ -34,7 +34,7 @@ def download(pathToFile):
             for f in base_path.iterdir():
                 z.write(f)
         data.seek(0)
-        return send_file(data, download_name='download.zip', as_attachment=True, mimetype='application/zip')
+        
     return send_file(os.path.join('./storage/' + pathToFile), as_attachment=True)
 
 
