@@ -4,7 +4,6 @@ from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 import pathlib
 import io
-#TODO: Remember to check if you can upload files with spaces in it
 
 
 app = Flask(__name__)
